@@ -11,7 +11,7 @@
 
 using namespace vex;
 
-// A global instance of competition
+// Declare competition instance
 competition Competition;
 
 /*---------------------------------------------------------------------------*/
@@ -50,24 +50,43 @@ void autonomous(void) {
 /*---------------------------------------------------------------------------*/
 
 void usercontrol(void) {
-  // User control code here, inside the loop
   while (1) {
-    // This is the main execution loop for the user control program.
-    // Each time through the loop your program should update motor + servo
-    // values based on feedback from the joysticks.
+    if (Controller1.ButtonL1.pressing()) {
+      FirstStage.setVelocity(50.0, pct);
+    } else if (Controller1.ButtonL2.pressing()) {
+      FirstStage.setVelocity(-15.0, pct);
+    } else {
+      FirstStage.setVelocity(0.0, pct);
+    }
 
-    // ........................................................................
-    // Insert user code here. This is where you use the joystick values to
-    // update your motors, etc.
-    // ........................................................................
+    if (Controller1.ButtonR1.pressing()) {
+      SecondStage.setVelocity(50.0, pct);
+    } else if (Controller1.ButtonR2.pressing()) {
+      SecondStage.setVelocity(-50.0, pct);
+    } else {
+      SecondStage.setVelocity(0.0, pct);
+    }
 
-    wait(20, msec); // Sleep the task for a short amount of time to
-                    // prevent wasted resources.
+    if (Controller1.ButtonA.pressing()) {
+      Claw.setVelocity(50.0, pct);
+    } else if (Controller1.ButtonB.pressing()) {
+      Claw.setVelocity(-50.0, pct);
+    } else {
+      Claw.setVelocity(0.0, pct);
+    }
+
+    FirstStage.spin(forward);
+    SecondStage.spin(forward);
+    Claw.spin(forward);
+
+    // Sleep for a short while to prevent wasted resources.
+    wait(20, msec);
+
   }
 }
 
 //
-// Main function where everything is run from
+// Main function where everything runs from
 //
 
 int main() {
