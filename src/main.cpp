@@ -7,6 +7,8 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
+// Setup
+// Any included libraries, namespaces, instances, etc
 #include "vex.h"
 
 using namespace vex;
@@ -51,6 +53,35 @@ void autonomous(void) {
 
 void usercontrol(void) {
   while (1) {
+    int forwards = Controller1.Axis3.position();
+    int horizontal = Controller1.Axis4.position();
+    int rotation = Controller1.Axis1.position();
+
+    /* "Arcade Drive"
+    double currentRotation = Gyro.rotation();
+
+    const double pi = 3.14159265;
+    double currentRotationRadians = currentRotation * pi / 180.0;
+
+    double adjustedForward = forwards * cos(currentRotationRadians) - horizontal * sin(currentRotationRadians);
+    double adjustedHorizontal = forwards * sin(currentRotationRadians) + horizontal * cos(currentRotationRadians);   
+    
+    double FrontRightSpeed = adjustedForward - adjustedHorizontal - rotation;
+    double BackRightSpeed = adjustedForward + adjustedHorizontal - rotation;
+    double BackLeftSpeed = adjustedForward - adjustedHorizontal + rotation;
+    double FrontLeftSpeed = adjustedForward + adjustedHorizontal + rotation;
+    */
+
+    double FrontRightSpeed = forwards - horizontal - rotation;
+    double BackRightSpeed = forwards + horizontal - rotation;
+    double BackLeftSpeed = forwards - horizontal + rotation;
+    double FrontLeftSpeed = forwards + horizontal + rotation;
+
+    FrontRight.spin(forward, FrontRightSpeed, pct);
+    BackRight.spin(forward, BackRightSpeed, pct);
+    BackLeft.spin(forward, BackLeftSpeed, pct);
+    FrontLeft.spin(forward, FrontLeftSpeed, pct);
+
     if (Controller1.ButtonL1.pressing()) {
       FirstStage.setVelocity(50.0, pct);
     } else if (Controller1.ButtonL2.pressing()) {
@@ -75,9 +106,15 @@ void usercontrol(void) {
       Claw.setVelocity(0.0, pct);
     }
 
-    FirstStage.spin(forward);
-    SecondStage.spin(forward);
-    Claw.spin(forward);
+    if (Controller1.ButtonDown.pressing()) {
+      Gyro.calibrate();
+
+    }
+
+    if (Gyro.isCalibrating()) {
+      Controller1.rumble(".");
+      
+    }
 
     // Sleep for a short while to prevent wasted resources.
     wait(20, msec);
