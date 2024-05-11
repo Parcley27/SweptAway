@@ -41,10 +41,10 @@ void vexcodeInit(void) {
   BackLeft.setStopping(brake);
   FrontLeft.setStopping(brake);
 
-  FirstStage.setStopping(brake);
-  SecondStage.setStopping(brake);
+  FirstStage.setStopping(hold);
+  SecondStage.setStopping(hold);
 
-  Claw.setStopping(brake);
+  Claw.setStopping(hold);
 
   // Calibrate inertial sensor
   Gyro.calibrate();
