@@ -57,25 +57,27 @@ void usercontrol(void) {
     int horizontal = Controller1.Axis4.position();
     int rotation = Controller1.Axis1.position();
 
-    /* "Arcade Drive"
+    /* Standard Drive
+    double FrontRightSpeed = forwards - horizontal - rotation;
+    double BackRightSpeed = forwards + horizontal - rotation;
+    double BackLeftSpeed = forwards - horizontal + rotation;
+    double FrontLeftSpeed = forwards + horizontal + rotation;
+    */
+
+    ///* Arcade Drive
     double currentRotation = Gyro.rotation();
 
     const double pi = 3.14159265;
     double currentRotationRadians = currentRotation * pi / 180.0;
 
-    double adjustedForward = forwards * cos(currentRotationRadians) - horizontal * sin(currentRotationRadians);
-    double adjustedHorizontal = forwards * sin(currentRotationRadians) + horizontal * cos(currentRotationRadians);   
+    double adjustedForward = forwards * cos(currentRotationRadians) + horizontal * sin(currentRotationRadians);
+    double adjustedHorizontal = -forwards * sin(currentRotationRadians) + horizontal * cos(currentRotationRadians);   
     
     double FrontRightSpeed = adjustedForward - adjustedHorizontal - rotation;
     double BackRightSpeed = adjustedForward + adjustedHorizontal - rotation;
     double BackLeftSpeed = adjustedForward - adjustedHorizontal + rotation;
     double FrontLeftSpeed = adjustedForward + adjustedHorizontal + rotation;
-    */
-
-    double FrontRightSpeed = forwards - horizontal - rotation;
-    double BackRightSpeed = forwards + horizontal - rotation;
-    double BackLeftSpeed = forwards - horizontal + rotation;
-    double FrontLeftSpeed = forwards + horizontal + rotation;
+    //*/
 
     FrontRight.spin(forward, FrontRightSpeed, pct);
     BackRight.spin(forward, BackRightSpeed, pct);
