@@ -130,7 +130,91 @@ void drive(int angle, int speed, int time) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  // Autonomous here
+  // Use drive() and rotateTo()
+
+  // Turn to first ball
+  rotateTo(225);
+
+  // Collect first ball
+  FirstStage.setVelocity(50, pct);
+  FirstStage.spinFor(1.0, seconds);
+
+  Claw.setVelocity(-100, pct);
+  Claw.spinFor(0.5, seconds);
+
+  drive(225, 25, 1);
+
+  // Grab ball
+  FirstStage.setVelocity(-50, pct);
+  FirstStage.spinFor(1, seconds);
+
+  Claw.setVelocity(100, pct);
+  Claw.spinFor(0.75, seconds);
+
+  drive(45, 50, 1);
+
+  // Turn to wall
+  rotateTo(1);
+
+  // Move arm up
+  FirstStage.spin(forward, 100, pct);
+  SecondStage.spin(forward, 100, pct);
+
+  wait(1, seconds);
+  
+  FirstStage.stop();
+  SecondStage.stop();
+
+  // Drive to wall
+  drive(90, 100, 0.6);
+
+  // Drop ball
+  Claw.setVelocity(-100, pct);
+  Claw.spinFor(0.5, seconds);
+
+  // Return to middle
+  drive(270, 60, 1);
+
+  SecondStage.setVelocity(-100, pct);
+  SecondStage.spinFor(1.0, seconds);
+
+  // Go to second ball
+  rotateTo(315);
+  drive(135, 60, 1);
+
+  // Grab ball
+  FirstStage.setVelocity(-50, pct);
+  FirstStage.spinFor(1.0, seconds);
+
+  Claw.setVelocity(100, pct);
+  Claw.spinFor(1.0, seconds);
+
+  // Go back to middle
+  drive(315, 50, 1);
+
+  // Turn to wall
+  rotateTo(1);
+
+  // Go to wall
+  FirstStage.spin(forward, 100, pct);
+  SecondStage.spin(forward, 100, pct);
+
+  wait(1, seconds);
+  
+  FirstStage.stop();
+  SecondStage.stop();
+
+  drive(90, 50, 1);
+
+  // Drop ball
+  Claw.setVelocity(-100, pct);
+  Claw.spinFor(1.0, seconds);
+
+  // Prepare for driver control
+  drive(270, 60, 1);
+
+  SecondStage.setVelocity(-100, pct);
+  SecondStage.spinFor(1.0, seconds);
 
 }
 
