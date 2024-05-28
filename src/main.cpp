@@ -107,10 +107,10 @@ void usercontrol(void) {
     }
 
     if (Controller1.ButtonB.pressing()) {
-      Claw.spin(forward, 50.0, pct);
+      Claw.spin(forward, 100.0, pct);
 
     } else if (Controller1.ButtonA.pressing()) {
-      Claw.spin(forward, -50.0, pct);
+      Claw.spin(forward, -100.0, pct);
 
     } else {
       Claw.stop();
