@@ -20,6 +20,9 @@ motor BackRight = motor(PORT2, ratio18_1, true);
 motor BackLeft = motor(PORT3, ratio18_1, false);
 motor FrontLeft = motor(PORT4, ratio18_1, false);
 
+motor_group RightMotors = motor_group(FrontRight, BackRight);
+motor_group LeftMotors = motor_group(FrontLeft, BackLeft);
+
 // Accessory Motors
 motor FirstStageRight = motor(PORT5, ratio18_1, false);
 motor FirstStageLeft = motor(PORT6, ratio18_1, true);

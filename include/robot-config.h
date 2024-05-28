@@ -15,6 +15,9 @@ extern motor BackRight;
 extern motor BackLeft;
 extern motor FrontLeft;
 
+extern motor_group RightMotors;
+extern motor_group LeftMotors;
+
 // Include accessory motors for main.cpp
 extern motor_group FirstStage;
 extern motor SecondStage;

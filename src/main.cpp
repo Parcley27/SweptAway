@@ -10,6 +10,7 @@
 // Setup
 // Any included libraries, namespaces, instances, etc
 #include "vex.h"
+#include "math.h"
 
 using namespace vex;
 
@@ -27,6 +28,96 @@ competition Competition;
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+
+}
+
+// Normalize any given angle to 0 ... 360
+double normalizeAngle(double angle) {
+    while (angle < 0) {
+        angle += 360;
+
+    }
+
+    while (angle >= 360) {
+        angle -= 360;
+
+    }
+
+    return angle;
+}
+
+// Will rotate the robot to a given angle (degrees)
+void rotateTo(int angle) {
+  if (normalizeAngle(Gyro.rotation()) < angle) {
+    while (normalizeAngle(Gyro.rotation()) < angle) {
+    LeftMotors.spin(forward, 30, pct);
+    RightMotors.spin(forward, -30, pct);
+
+    }
+
+  } else if (normalizeAngle(Gyro.rotation()) > angle) {
+    while (normalizeAngle(Gyro.rotation()) > angle) {
+    LeftMotors.spin(forward, -30, pct);
+    RightMotors.spin(forward, 30, pct);
+
+    }
+
+  }
+
+  LeftMotors.stop();
+  RightMotors.stop();
+
+}
+
+void arcadeDrive(int x, int y, int rotation = 0) {
+  const double pi = 3.14159265;
+
+  double currentRotation = Gyro.rotation();
+  double currentRotationRadians = (currentRotation) * pi / 180.0;
+
+  double forwardSpeed = x * cos(currentRotationRadians) + y * sin(currentRotationRadians);
+  double horizontalSpeed = -x * sin(currentRotationRadians) + y * cos(currentRotationRadians);
+
+  double FrontRightSpeed = forwardSpeed - horizontalSpeed - rotation;
+  double BackRightSpeed = forwardSpeed + horizontalSpeed - rotation;
+  double BackLeftSpeed = forwardSpeed - horizontalSpeed + rotation;
+  double FrontLeftSpeed = forwardSpeed + horizontalSpeed + rotation;
+  
+  FrontRight.spin(forward, FrontRightSpeed, pct);
+  BackRight.spin(forward, BackRightSpeed, pct);
+  BackLeft.spin(forward, BackLeftSpeed, pct);
+  FrontLeft.spin(forward, FrontLeftSpeed, pct);
+
+}
+
+// Will drive the robot at a specified direction at a specified speed
+// Direction is specified as heading on the unit circle
+void drive(int angle, int speed, int time) {
+  const double pi = 3.14159265;
+
+  angle = normalizeAngle(angle);
+  double radianAngle = angle * pi / 180.0;
+
+  int digitalX = speed * sin(radianAngle);
+  int digitalY = (speed * speed) - (digitalX * digitalX);
+  digitalY = sqrt(digitalY);
+
+  double currentRotation = Gyro.rotation();
+  double currentRotationRadians = (currentRotation) * pi / 180.0;
+
+  if (angle > 90 && angle < 270) {
+    digitalY = -digitalY;
+
+  }
+
+  arcadeDrive(digitalX, digitalY);
+
+  wait(time, seconds);
+
+  FrontRight.stop();
+  BackRight.stop();
+  BackLeft.stop();
+  FrontLeft.stop();
 
 }
 
@@ -52,37 +143,22 @@ void autonomous(void) {
 /*---------------------------------------------------------------------------*/
 
 void usercontrol(void) {
+  bool sensitive = false;
+
   while (1) {
     int forwards = Controller1.Axis3.position();
     int horizontal = Controller1.Axis4.position();
     int rotation = Controller1.Axis1.position();
 
-    /* Standard Drive
-    double FrontRightSpeed = forwards - horizontal - rotation;
-    double BackRightSpeed = forwards + horizontal - rotation;
-    double BackLeftSpeed = forwards - horizontal + rotation;
-    double FrontLeftSpeed = forwards + horizontal + rotation;
-    */
+    if (sensitive) {
+      rotation = rotation * 0.45;
 
-    ///* Arcade Drive
-    double currentRotation = Gyro.rotation();
+    } else {
+      rotation = rotation * 0.9;
 
-    const double pi = 3.14159265;
-    double currentRotationRadians = currentRotation * pi / 180.0;
+    }
 
-    double adjustedForward = forwards * cos(currentRotationRadians) + horizontal * sin(currentRotationRadians);
-    double adjustedHorizontal = -forwards * sin(currentRotationRadians) + horizontal * cos(currentRotationRadians);   
-    
-    double FrontRightSpeed = adjustedForward - adjustedHorizontal - rotation;
-    double BackRightSpeed = adjustedForward + adjustedHorizontal - rotation;
-    double BackLeftSpeed = adjustedForward - adjustedHorizontal + rotation;
-    double FrontLeftSpeed = adjustedForward + adjustedHorizontal + rotation;
-    //*/
-
-    FrontRight.spin(forward, FrontRightSpeed, pct);
-    BackRight.spin(forward, BackRightSpeed, pct);
-    BackLeft.spin(forward, BackLeftSpeed, pct);
-    FrontLeft.spin(forward, FrontLeftSpeed, pct);
+    arcadeDrive(forwards, horizontal, rotation);
 
     if (Controller1.ButtonL1.pressing()) {
       FirstStage.spin(forward, 50.0, pct);
@@ -125,6 +201,19 @@ void usercontrol(void) {
     if (Gyro.isCalibrating()) {
       Controller1.rumble(".");
       
+    }
+
+    if (Controller1.ButtonUp.pressing()) {
+      //drive(90, 100, 1);
+      //rotateTo(0);
+
+    }
+
+    if (Controller1.ButtonRight.pressing()) {
+      sensitive = !sensitive;
+      Controller1.rumble(".");
+      wait(0.25, seconds);
+
     }
 
     // Sleep for a short while to prevent wasted resources.
