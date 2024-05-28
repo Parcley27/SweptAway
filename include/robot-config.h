@@ -1,3 +1,12 @@
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Module:       robot-config.h                                            */
+/*    Author:       Pierce Oxley                                              */
+/*    Created:      8/5/2024                                                  */
+/*    Description:  Share objects around robot                                */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
+
 using namespace vex;
 
 // Include brain for main.cpp

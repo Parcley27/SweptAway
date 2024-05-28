@@ -1,3 +1,12 @@
+/*----------------------------------------------------------------------------*/
+/*                                                                            */
+/*    Module:       robot-config.cpp                                          */
+/*    Author:       Pierce Oxley                                              */
+/*    Created:      8/5/2024                                                  */
+/*    Description:  Configure robot settings and devices                      */
+/*                                                                            */
+/*----------------------------------------------------------------------------*/
+
 #include "vex.h"
 
 using namespace vex;
