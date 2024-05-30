@@ -12,6 +12,9 @@
 #include "vex.h"
 #include "math.h"
 
+const int counterclockwise = -1;
+const int clockwise = 1;
+
 using namespace vex;
 
 // Declare competition instance
@@ -46,22 +49,42 @@ double normalizeAngle(double angle) {
     return angle;
 }
 
-// Will rotate the robot to a given angle (degrees)
-void rotateTo(int angle) {
-  if (normalizeAngle(Gyro.rotation()) < angle) {
+// Rotate to a provided angle (degrees)
+void rotateTo(int angle, int direction = 0) {
+  // -1 = counterclockwise, 0 = any, 1 = clockwise
+  const int any = 0;
+
+  RightMotors.stop();
+  LeftMotors.stop();
+
+  if (direction == any) {
+    while (normalizeAngle(Gyro.rotation() + 1) < angle) {
+    LeftMotors.spin(forward, 60, pct);
+    RightMotors.spin(forward, -60, pct);
+
+    }
+
+    while (normalizeAngle(Gyro.rotation() - 360) > angle) {
+    LeftMotors.spin(forward, -60, pct);
+    RightMotors.spin(forward, 60, pct);
+
+    }
+  }
+
+  if (direction == counterclockwise) {
+    while (normalizeAngle(Gyro.rotation() - 360) > angle) {
+    LeftMotors.spin(forward, -40, pct);
+    RightMotors.spin(forward, 40, pct);
+
+    }
+  }
+
+  if (direction == clockwise) {
     while (normalizeAngle(Gyro.rotation()) < angle) {
-    LeftMotors.spin(forward, 30, pct);
-    RightMotors.spin(forward, -30, pct);
+    LeftMotors.spin(forward, 40, pct);
+    RightMotors.spin(forward, -40, pct);
 
     }
-
-  } else if (normalizeAngle(Gyro.rotation()) > angle) {
-    while (normalizeAngle(Gyro.rotation()) > angle) {
-    LeftMotors.spin(forward, -30, pct);
-    RightMotors.spin(forward, 30, pct);
-
-    }
-
   }
 
   LeftMotors.stop();
@@ -90,9 +113,9 @@ void arcadeDrive(int x, int y, int rotation = 0) {
 
 }
 
-// Will drive the robot at a specified direction at a specified speed
+// Drive in a given direction at a given speed
 // Direction is specified as heading on the unit circle
-void drive(int angle, int speed, int time) {
+void drive(int angle, int speed, double time) {
   const double pi = 3.14159265;
 
   angle = normalizeAngle(angle);
@@ -112,7 +135,7 @@ void drive(int angle, int speed, int time) {
 
   arcadeDrive(digitalX, digitalY);
 
-  wait(time, seconds);
+  wait(time * 1000, msec);
 
   FrontRight.stop();
   BackRight.stop();
@@ -136,13 +159,19 @@ void autonomous(void) {
   rotateTo(225);
 
   // Collect first ball
+  // Prepare mechanism
   FirstStage.setVelocity(50, pct);
-  FirstStage.spinFor(1.0, seconds);
-
   Claw.setVelocity(-100, pct);
-  Claw.spinFor(0.5, seconds);
 
-  drive(225, 25, 1);
+  FirstStage.spin(forward);
+  Claw.spin(forward);
+
+  wait(1, seconds);
+
+  FirstStage.stop();
+  Claw.stop();
+
+  drive(225, 60, 0.5);
 
   // Grab ball
   FirstStage.setVelocity(-50, pct);
@@ -151,7 +180,7 @@ void autonomous(void) {
   Claw.setVelocity(100, pct);
   Claw.spinFor(0.75, seconds);
 
-  drive(45, 50, 1);
+  drive(45, 50, 1.0);
 
   // Turn to wall
   rotateTo(1);
@@ -166,31 +195,36 @@ void autonomous(void) {
   SecondStage.stop();
 
   // Drive to wall
-  drive(90, 100, 0.6);
+  drive(90, 60, 0.7);
+  drive(90, 20, 0.4);
 
   // Drop ball
   Claw.setVelocity(-100, pct);
   Claw.spinFor(0.5, seconds);
 
   // Return to middle
-  drive(270, 60, 1);
+  drive(270, 55, 0.6);
 
   SecondStage.setVelocity(-100, pct);
   SecondStage.spinFor(1.0, seconds);
 
   // Go to second ball
-  rotateTo(315);
-  drive(135, 60, 1);
+  rotateTo(315, -1);
+
+  LeftMotors.stop();
+  RightMotors.stop();
+
+  drive(135, 60, 1.0);
 
   // Grab ball
   FirstStage.setVelocity(-50, pct);
   FirstStage.spinFor(1.0, seconds);
 
   Claw.setVelocity(100, pct);
-  Claw.spinFor(1.0, seconds);
+  Claw.spinFor(0.8, seconds);
 
   // Go back to middle
-  drive(315, 50, 1);
+  drive(315, 40, 1.0);
 
   // Turn to wall
   rotateTo(1);
@@ -204,14 +238,14 @@ void autonomous(void) {
   FirstStage.stop();
   SecondStage.stop();
 
-  drive(90, 50, 1);
+  drive(90, 60, 1.0);
 
   // Drop ball
   Claw.setVelocity(-100, pct);
   Claw.spinFor(1.0, seconds);
 
   // Prepare for driver control
-  drive(270, 60, 1);
+  drive(270, 60, 1.0);
 
   SecondStage.setVelocity(-100, pct);
   SecondStage.spinFor(1.0, seconds);
@@ -290,6 +324,7 @@ void usercontrol(void) {
     if (Controller1.ButtonUp.pressing()) {
       //drive(90, 100, 1);
       //rotateTo(0);
+      //RightMotors.spin(forward);
 
     }
 
