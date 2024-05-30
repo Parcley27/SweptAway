@@ -290,10 +290,10 @@ void usercontrol(void) {
     }
 
     if (Controller1.ButtonR1.pressing()) {
-      SecondStage.spin(forward, 50.0, pct);
+      SecondStage.spin(forward, 75.0, pct);
 
     } else if (Controller1.ButtonR2.pressing()) {
-      SecondStage.spin(forward, -50.0, pct);
+      SecondStage.spin(forward, -75.0, pct);
 
     } else {
       SecondStage.stop();
