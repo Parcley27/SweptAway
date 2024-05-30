@@ -328,7 +328,7 @@ void usercontrol(void) {
 
     }
 
-    if (Controller1.ButtonRight.pressing()) {
+    if (Controller1.ButtonLeft.pressing()) {
       sensitive = !sensitive;
       Controller1.rumble(".");
       wait(0.25, seconds);
