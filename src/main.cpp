@@ -282,7 +282,7 @@ void usercontrol(void) {
       FirstStage.spin(forward, 50.0, pct);
 
     } else if (Controller1.ButtonL2.pressing()) {
-      FirstStage.spin(forward, -15.0, pct);
+      FirstStage.spin(forward, -25.0, pct);
 
     } else {
       FirstStage.stop();
