@@ -12,9 +12,6 @@
 #include "vex.h"
 #include "math.h"
 
-const int counterclockwise = -1;
-const int clockwise = 1;
-
 using namespace vex;
 
 // Declare competition instance
@@ -47,44 +44,46 @@ double normalizeAngle(double angle) {
     }
 
     return angle;
+
+}
+
+int findTurnDirection(double currentAngle, double targetAngle) {
+  const int counterclockwise = -1;
+  const int clockwise = 1;
+
+  double delta = normalizeAngle(targetAngle - currentAngle);
+
+  // Return -1 for counterclockwise or 1 for clockwise
+  return (delta > 180) ? counterclockwise : clockwise;
+
+}
+
+bool isInRange(double middleValue, double maximumRange, double value) {
+  return (abs(middleValue - value) <= maximumRange) ? true : false;
+
 }
 
 // Rotate to a provided angle (degrees)
-void rotateTo(int angle, int direction = 0) {
+void rotateTo(int targetAngle, int direction = 0, int turnSpeed = 40) {
   // -1 = counterclockwise, 0 = any, 1 = clockwise
   const int any = 0;
+
+  const double degreeOfError = 1.0;
 
   RightMotors.stop();
   LeftMotors.stop();
 
   if (direction == any) {
-    while (normalizeAngle(Gyro.rotation() + 1) < angle) {
-    LeftMotors.spin(forward, 60, pct);
-    RightMotors.spin(forward, -60, pct);
+    direction = findTurnDirection(normalizeAngle(Gyro.rotation()), targetAngle);
 
-    }
-
-    while (normalizeAngle(Gyro.rotation() - 360) > angle) {
-    LeftMotors.spin(forward, -60, pct);
-    RightMotors.spin(forward, 60, pct);
-
-    }
   }
 
-  if (direction == counterclockwise) {
-    while (normalizeAngle(Gyro.rotation() - 360) > angle) {
-    LeftMotors.spin(forward, -40, pct);
-    RightMotors.spin(forward, 40, pct);
+  // Direction always is 1 (clockwise) or -1 (counterclockwise)
+  // If 1 then nothing happens, if -1 then it switches the two speeds around to always turn in the right direction
+  while (!isInRange(targetAngle, degreeOfError, normalizeAngle(Gyro.rotation()))) {
+    LeftMotors.spin(forward, direction * turnSpeed, pct);
+    RightMotors.spin(forward, direction * -turnSpeed, pct);
 
-    }
-  }
-
-  if (direction == clockwise) {
-    while (normalizeAngle(Gyro.rotation()) < angle) {
-    LeftMotors.spin(forward, 40, pct);
-    RightMotors.spin(forward, -40, pct);
-
-    }
   }
 
   LeftMotors.stop();
@@ -154,6 +153,8 @@ void drive(int angle, int speed, double time) {
 
 void autonomous(void) {
   // Use drive() and rotateTo()
+  const int counterclockwise = -1;
+  const int clockwise = 1;
 
   // Turn to first ball
   rotateTo(225);
