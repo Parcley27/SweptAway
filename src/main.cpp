@@ -249,7 +249,7 @@ void autonomous(void) {
   drive(270, 60, 1.0);
 
   SecondStage.setVelocity(-100, pct);
-  SecondStage.spinFor(1.0, seconds);
+  SecondStage.spinFor(0.75, seconds);
 
 }
 
