@@ -7,45 +7,46 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
+// Include required library for VEX
 #include "vex.h"
 
+// Use VEX namespace for code objects
 using namespace vex;
 
-// Brain
+// Declare brain
 brain Brain;
 
-// Controller
+// Declare controller
 controller Controller1 = controller(primary);
 
-// Sensors
+// Declare sensors
 inertial Gyro = inertial(PORT11);
 
-// Robot Motors
-// true == forwards, false == reverse
-// Drive Motors
+// Declare motors
+// Correct for physical orientation
+const bool forwards = true;
+const bool backwards = false;
 
-motor FrontRight = motor(PORT1, ratio18_1, true);
-motor BackRight = motor(PORT2, ratio18_1, true);
-motor BackLeft = motor(PORT3, ratio18_1, false);
-motor FrontLeft = motor(PORT4, ratio18_1, false);
+// Drive motors
+motor FrontRight = motor(PORT1, ratio18_1, forwards);
+motor BackRight = motor(PORT2, ratio18_1, forwards);
+motor BackLeft = motor(PORT3, ratio18_1, backwards);
+motor FrontLeft = motor(PORT4, ratio18_1, backwards);
 
 motor_group RightMotors = motor_group(FrontRight, BackRight);
 motor_group LeftMotors = motor_group(FrontLeft, BackLeft);
 
-// Accessory Motors
-motor FirstStageRight = motor(PORT5, ratio18_1, false);
-motor FirstStageLeft = motor(PORT6, ratio18_1, true);
+// Accessory motors
+motor FirstStageRight = motor(PORT5, ratio18_1, backwards);
+motor FirstStageLeft = motor(PORT6, ratio18_1, forwards);
 motor_group FirstStage = motor_group(FirstStageLeft, FirstStageRight);
 
-motor SecondStage = motor(PORT7, ratio18_1, false);
+motor SecondStage = motor(PORT7, ratio18_1, backwards);
 
-motor Claw = motor(PORT8, ratio18_1, true);
+motor Claw = motor(PORT8, ratio18_1, forwards);
 
-/**
- * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
- *
- * This should be called at the start of your int main function.
- */
+// Initialize robot for use
+// Includes object setup and sensor calibration
 void vexcodeInit(void) {
   // Set motor stopping modes
   FrontRight.setStopping(brake);
@@ -61,8 +62,9 @@ void vexcodeInit(void) {
   // Calibrate inertial sensor
   Gyro.calibrate();
   
+  // Wait for sensor to calibrate
   while (Gyro.isCalibrating()) {
-    // Do nothing
-  }
+    wait(10, msec);
 
+  }
 }

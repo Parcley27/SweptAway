@@ -7,6 +7,7 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
+// Use VEX namespace for code objects
 using namespace vex;
 
 // Include brain for main.cpp
@@ -32,9 +33,5 @@ extern motor_group FirstStage;
 extern motor SecondStage;
 extern motor Claw;
 
-/**
- * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
- *
- * This should be called at the start of your int main function.
- */
+// Include vexcodeInit() for main.cpp
 void vexcodeInit(void);

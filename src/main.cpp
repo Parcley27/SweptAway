@@ -12,45 +12,44 @@
 #include "vex.h"
 #include "math.h"
 
+// Use VEX namespace for code objects
 using namespace vex;
 
 // Declare competition instance
 competition Competition;
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                          Pre-Autonomous Functions                         */
-/*                                                                           */
-/*                      Run vexcodeInit to set up robot                      */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-
+// Set up robot to run program and prepare for competition
 void pre_auton(void) {
-  // Initializing Robot Configuration. DO NOT REMOVE!
+  // Prepare the robot to run the program
+  // Object setup, calibration, etc all in here
   vexcodeInit();
 
 }
 
-// Normalize any given angle to 0 ... 360
+// Normalize any given angle to 0 ... 359
 double normalizeAngle(double angle) {
-    while (angle < 0) {
-        angle += 360;
+  // If less than 0, add 360 deg
+  while (angle < 0) {
+      angle += 360;
 
-    }
+  }
 
-    while (angle >= 360) {
-        angle -= 360;
+  // If more than or equal to 360, subtract 360 deg
+  while (angle >= 360) {
+      angle -= 360;
 
-    }
+  }
 
-    return angle;
+  return angle;
 
 }
 
+// Find most efficient turn direction based on two input angles
 int findTurnDirection(double currentAngle, double targetAngle) {
   const int counterclockwise = -1;
   const int clockwise = 1;
 
+  // Find the diffirence between the angles, and normalize to 0 ... 359
   double delta = normalizeAngle(targetAngle - currentAngle);
 
   // Return -1 for counterclockwise or 1 for clockwise
@@ -58,7 +57,9 @@ int findTurnDirection(double currentAngle, double targetAngle) {
 
 }
 
+// Check if a value is within a maximum range of a middle value
 bool isInRange(double middleValue, double maximumRange, double value) {
+  // Return true if in range, otherwise return false
   return (abs(middleValue - value) <= maximumRange) ? true : false;
 
 }
@@ -70,9 +71,11 @@ void rotateTo(int targetAngle, int direction = 0, int turnSpeed = 40) {
 
   const double degreeOfError = 1.0;
 
+  // Stopping the motors before trying to turn helps turning be more accurate
   RightMotors.stop();
   LeftMotors.stop();
 
+  // Figure out direction to turn if none provided
   if (direction == any) {
     direction = findTurnDirection(normalizeAngle(Gyro.rotation()), targetAngle);
 
@@ -91,20 +94,26 @@ void rotateTo(int targetAngle, int direction = 0, int turnSpeed = 40) {
 
 }
 
+// Drive in an absolute heading relative to starting position
 void arcadeDrive(int x, int y, int rotation = 0) {
   const double pi = 3.14159265;
 
+  // Convert current rotation to radians
+  // math.h sin() and cos() use radians not degrees
   double currentRotation = Gyro.rotation();
   double currentRotationRadians = (currentRotation) * pi / 180.0;
 
+  // Solve general speeds accounting for current rotation
   double forwardSpeed = x * cos(currentRotationRadians) + y * sin(currentRotationRadians);
   double horizontalSpeed = -x * sin(currentRotationRadians) + y * cos(currentRotationRadians);
 
+  // Solve each individual motor speed
   double FrontRightSpeed = forwardSpeed - horizontalSpeed - rotation;
   double BackRightSpeed = forwardSpeed + horizontalSpeed - rotation;
   double BackLeftSpeed = forwardSpeed - horizontalSpeed + rotation;
   double FrontLeftSpeed = forwardSpeed + horizontalSpeed + rotation;
   
+  // Turn motors
   FrontRight.spin(forward, FrontRightSpeed, pct);
   BackRight.spin(forward, BackRightSpeed, pct);
   BackLeft.spin(forward, BackLeftSpeed, pct);
@@ -112,30 +121,32 @@ void arcadeDrive(int x, int y, int rotation = 0) {
 
 }
 
-// Drive in a given direction at a given speed
+// Drive in a given direction at a given speed, used for autonomous
 // Direction is specified as heading on the unit circle
 void drive(int angle, int speed, double time) {
   const double pi = 3.14159265;
 
+  // Convert intended angle to radians between 0 ... 359 degrees
   angle = normalizeAngle(angle);
   double radianAngle = angle * pi / 180.0;
 
+  // Solve forwards and horizntal speeds
   int digitalX = speed * sin(radianAngle);
   int digitalY = (speed * speed) - (digitalX * digitalX);
   digitalY = sqrt(digitalY);
 
-  double currentRotation = Gyro.rotation();
-  double currentRotationRadians = (currentRotation) * pi / 180.0;
-
+  // Account for "reverse" movements
   if (angle > 90 && angle < 270) {
     digitalY = -digitalY;
 
   }
 
+  // Drive in same fashion as user control, but for a predetermined time only
   arcadeDrive(digitalX, digitalY);
 
   wait(time * 1000, msec);
 
+  // Stop motors once finished
   FrontRight.stop();
   BackRight.stop();
   BackLeft.stop();
@@ -143,16 +154,10 @@ void drive(int angle, int speed, double time) {
 
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                            Autonomous Portion                             */
-/*                                                                           */
-/*               Used for the autonomous portion of each game                */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-
+// Autonomous code section during competition
 void autonomous(void) {
-  // Use drive() and rotateTo()
+  // Same values as those used in findTurnDirection()
+  // Unfortunately didn't work as global varialbes so they're stuck here
   const int counterclockwise = -1;
   const int clockwise = 1;
 
@@ -253,32 +258,25 @@ void autonomous(void) {
 
 }
 
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                                User Control                               */
-/*                                                                           */
-/*              Used for the user control portion of each game               */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-
+// User control section during competition
 void usercontrol(void) {
+  // Initialize sensitive mode turned off
   bool sensitive = false;
 
   while (1) {
+    // Fetch robot direction input from controller
     int forwards = Controller1.Axis3.position();
     int horizontal = Controller1.Axis4.position();
     int rotation = Controller1.Axis1.position();
 
-    if (sensitive) {
-      rotation = rotation * 0.45;
+    // Change rotation sensitivity
+    // Can also be done with other inputs/outputs in wanted later
+    rotation = rotation * (sensitive ? 0.45 : 0.9);
 
-    } else {
-      rotation = rotation * 0.9;
-
-    }
-
+    // Drive with paramaters taken from robot controller
     arcadeDrive(forwards, horizontal, rotation);
 
+    // Control robot first stage
     if (Controller1.ButtonL1.pressing()) {
       FirstStage.spin(forward, 50.0, pct);
 
@@ -290,6 +288,7 @@ void usercontrol(void) {
 
     }
 
+    // Control robot second stage
     if (Controller1.ButtonR1.pressing()) {
       SecondStage.spin(forward, 75.0, pct);
 
@@ -301,6 +300,7 @@ void usercontrol(void) {
 
     }
 
+    // Control robot claw
     if (Controller1.ButtonB.pressing()) {
       Claw.spin(forward, 100.0, pct);
 
@@ -312,11 +312,13 @@ void usercontrol(void) {
 
     }
 
+    // Recalibrate gyro sensor incase it gets confused
     if (Controller1.ButtonDown.pressing()) {
       Gyro.calibrate();
 
     }
 
+    // Haptic feedback to know when it's not safe to drive
     if (Gyro.isCalibrating()) {
       Controller1.rumble(".");
       
@@ -329,6 +331,8 @@ void usercontrol(void) {
 
     }
 
+    // Toggle "sensitive mode"
+    // Delay is added to allow time for button to be depressed
     if (Controller1.ButtonLeft.pressing()) {
       sensitive = !sensitive;
       Controller1.rumble(".");
@@ -342,10 +346,7 @@ void usercontrol(void) {
   }
 }
 
-//
-// Main function where everything runs from
-//
-
+// Run and loop robot program
 int main() {
   // Declare which parts of the program are for each game mode
   Competition.autonomous(autonomous);

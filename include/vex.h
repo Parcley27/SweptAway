@@ -7,6 +7,7 @@
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
+// Any required libraries for use by the robot code
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
